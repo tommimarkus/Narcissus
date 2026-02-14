@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+current_branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+if [[ -z "${current_branch}" ]]; then
+  # Detached HEAD; nothing to protect.
+  exit 0
+fi
+
+case "${current_branch}" in
+  backup/*)
+    # Avoid recursively backing up backup branches.
+    exit 0
+    ;;
+esac
+
+timestamp="$(date +%Y%m%d-%H%M%S)"
+backup_branch="backup/${current_branch}/${timestamp}"
+
+if git show-ref --verify --quiet "refs/heads/${backup_branch}"; then
+  backup_branch="${backup_branch}-$$"
+fi
+
+git branch "${backup_branch}" >/dev/null
+echo "[pre-rebase] backup created: ${backup_branch}"
