@@ -722,6 +722,22 @@ local function CameraAutoZoomIn_OnValueChanged(self, value)
     CameraAutoZoomIn_SetupDescription(self);
 end
 
+local function CameraInstantMode_SetupDescription(self)
+    if DB[self.key] then
+        if self.description then
+            self.description:SetText(L["Instant Mode Description On"])
+        end
+    else
+        if self.description then
+            self.description:SetText(L["Instant Mode Description Off"])
+        end
+    end
+end
+
+local function CameraInstantMode_OnValueChanged(self, value)
+    CameraInstantMode_SetupDescription(self);
+end
+
 local function CameraTransition_SetupDescription(self)
     if DB[self.key] then
         if self.description then
@@ -1858,6 +1874,7 @@ local Categories = {
         widgets = {
             {type = "header", level = 0, text = L["Camera"]},
             {type = "checkbox", level = 1, key = "CameraAutoZoomIn", text = L["Camera Auto Zoom In"], onValueChangedFunc = CameraAutoZoomIn_OnValueChanged, description = L["Camera Auto Zoom In Off"], setupFunc = CameraAutoZoomIn_SetupDescription, isNewFeature = true},
+            {type = "checkbox", level = 1, key = "CameraInstantMode", text = L["Instant Mode"], onValueChangedFunc = CameraInstantMode_OnValueChanged, description = L["Instant Mode Description Off"], setupFunc = CameraInstantMode_SetupDescription},
             {type = "checkbox", level = 3, key = "CameraTransition", text = L["Camera Transition"], isChild = true, onValueChangedFunc = CameraTransition_OnValueChanged, description = L["Camera Transition Description Off"], setupFunc = CameraTransition_SetupDescription},
             {type = "checkbox", level = 3, key = "CameraOrbit", text = L["Orbit Camera"], isChild = true, onValueChangedFunc = CameraOrbitToggle_OnValueChanged, description = L["Orbit Camera Description On"], setupFunc = CameraOrbitToggle_SetupDescription},
             {type = "checkbox", level = 3, key = "UseBustShot", text = L["Use Bust Shot"], isChild = true, onValueChangedFunc = CameraUseBustShot_OnValueChanged},

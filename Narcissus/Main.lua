@@ -258,6 +258,10 @@ function ViewProfile:ResetView(index)
 	end
 end
 
+local function IsCameraInstantModeActive()
+	return NarcissusDB and (not NarcissusDB.CameraAutoZoomIn) and NarcissusDB.CameraInstantMode
+end
+
 
 local IntroMotion = {};
 
@@ -299,11 +303,17 @@ end
 
 function IntroMotion:Enter()
 	if not NarcissusDB.CameraAutoZoomIn then
-		After(0.25, function()
-			self:ShowFrame();
-		end);
-		CameraUtil:SmoothShoulderByZoom();
-		UIParentFade:FadeOutUIParent();
+		local instantMode = IsCameraInstantModeActive();
+		if instantMode then
+			self:ShowFrame(true);
+			UIParentFade:HideUIParent();
+		else
+			After(0.25, function()
+				self:ShowFrame();
+			end);
+			CameraUtil:SmoothShoulderByZoom();
+			UIParentFade:FadeOutUIParent();
+		end
 		return
 	end
 
@@ -375,32 +385,52 @@ function IntroMotion:PlayAttributeAnimation()
 	RadarChart.animIn:Play();
 end
 
-function IntroMotion:ShowFrame()
+function IntroMotion:ShowFrame(instantMode)
 	if not InCombatLockdown() then
 		local GuideLineFrame = Narci_GuideLineFrame;
 		local VirtualLineRight = GuideLineFrame.VirtualLineRight;
-		VirtualLineRight.AnimFrame:Hide();
-		local offsetX = GuideLineFrame.VirtualLineRight.AnimFrame.defaultX or -496;
-		VirtualLineRight:SetPoint("RIGHT", offsetX + 120, 0);
-		VirtualLineRight.AnimFrame.toX = offsetX;
-		VirtualLineRight.AnimFrame:Show();
-		GuideLineFrame.VirtualLineLeft.AnimFrame:Show();
-		After(0, function()
-			FadeFrame(Narci_Character, 0.6, 1);
-		end);
+
+		if instantMode then
+			Narci_GuideLineFrame_SnapToFinalPosition();
+			Narci_Character:Show();
+			Narci_Character:SetAlpha(1);
+		else
+			VirtualLineRight.AnimFrame:Hide();
+			local offsetX = GuideLineFrame.VirtualLineRight.AnimFrame.defaultX or -496;
+			VirtualLineRight:SetPoint("RIGHT", offsetX + 120, 0);
+			VirtualLineRight.AnimFrame.toX = offsetX;
+			VirtualLineRight.AnimFrame:Show();
+			GuideLineFrame.VirtualLineLeft.AnimFrame:Show();
+			After(0, function()
+				FadeFrame(Narci_Character, 0.6, 1);
+			end);
+		end
 		Narci_SnowEffect(true);
 	end
 
-	self:PlayAttributeAnimation();
-	if MOG_MODE then
-		FadeFrame(Narci_Attribute, 0.4, 0)
+	if instantMode then
+		RadarChart:UpdateChart(true);
+		if MOG_MODE then
+			Narci_Attribute:Hide();
+			Narci_Attribute:SetAlpha(0);
+		else
+			Narci_Attribute:Show();
+			Narci_Attribute:SetAlpha(1);
+		end
 	else
-		FadeFrame(Narci_Attribute, 0.4, 1, 0);
+		self:PlayAttributeAnimation();
+		if MOG_MODE then
+			FadeFrame(Narci_Attribute, 0.4, 0)
+		else
+			FadeFrame(Narci_Attribute, 0.4, 1, 0);
+		end
 	end
 end
 
 
 local function ExitFunc()
+	local instantMode = IsCameraInstantModeActive();
+
 	IS_OPENED = false;
 	CameraUtil:SetUseMogOffset(false);
 	EL:Hide();
@@ -408,16 +438,28 @@ local function ExitFunc()
 	MoveViewRightStop();
 	CameraUtil:RestoreMotionSickness();
 
+	if instantMode and CameraUtil.Shoulder then
+		CameraUtil.Shoulder:Hide();
+	end
+
 	if not GetKeepActionCam() then		--(not CVarTemp.isDynamicCamLoaded and CVarTemp.dynamicPitch == 0) or not Narci.keepActionCam
 		SetCVar("test_cameraDynamicPitch", 0);								--Note: "test_cameraDynamicPitch" may cause camera to jitter while reseting the player's view
-		CameraUtil:SmoothShoulder(0);
+		if instantMode then
+			SetCVar("test_cameraOverShoulder", 0);
+		else
+			CameraUtil:SmoothShoulder(0);
+		end
 		After(1, function()
 			ConsoleExec( "actioncam off" );
 			MoveViewRightStop();
 		end)
 	else
 		--Restore the acioncam state
-		CameraUtil:SmoothShoulder(CVarTemp.shoulderOffset);
+		if instantMode then
+			SetCVar("test_cameraOverShoulder", CVarTemp.shoulderOffset);
+		else
+			CameraUtil:SmoothShoulder(CVarTemp.shoulderOffset);
+		end
 		SetCVar("test_cameraDynamicPitch", CVarTemp.dynamicPitch);
 		After(1, function()
 			MoveViewRightStop();
@@ -426,15 +468,21 @@ local function ExitFunc()
 
 	ConsoleExec("pitchlimit 88");
 
-	FadeFrame(Narci_Vignette, 0.5, 0);
-	if Narci_Attribute:IsVisible() then
-		Narci_Attribute.animOut:Play();
+	if instantMode then
+		Narci_Vignette:Hide();
+		Narci_Attribute:Hide();
+		Narci_Character:Hide();
+		UIParentFade:ShowUIParent();
+	else
+		FadeFrame(Narci_Vignette, 0.5, 0);
+		if Narci_Attribute:IsVisible() then
+			Narci_Attribute.animOut:Play();
+		end
+		UIParentFade:FadeInUIParent();
 	end
 
-	UIParentFade:FadeInUIParent();
-
 	After(0.1, function()
-		if not IntroMotion.useCameraTransition then
+		if instantMode or (not IntroMotion.useCameraTransition) then
 			SetCVar("cameraViewBlendStyle", 2);
 		end
 
@@ -2214,7 +2262,12 @@ local function Narci_Close()
 	if Narci.showExitConfirm and not InCombatLockdown() then
 		local ExitConfirm = Narci_ExitConfirmationDialog;
 		if not ExitConfirm:IsShown() then
-			FadeFrame(ExitConfirm, 0.25, 1);
+			if IsCameraInstantModeActive() then
+				ExitConfirm:SetAlpha(1);
+				ExitConfirm:Show();
+			else
+				FadeFrame(ExitConfirm, 0.25, 1);
+			end
 
 			SetUIVisibility(false);
 			MiniButton:Enable();
@@ -2222,10 +2275,18 @@ local function Narci_Close()
 
 			return
 		else
-			FadeFrame(ExitConfirm, 0.15, 0);
+			if IsCameraInstantModeActive() then
+				ExitConfirm:Hide();
+			else
+				FadeFrame(ExitConfirm, 0.15, 0);
+			end
 		end
 	end
-	SlotController:PlayAnimOut();
+	if IsCameraInstantModeActive() then
+		Narci_Character:Hide();
+	else
+		SlotController:PlayAnimOut();
+	end
 	ExitFunc();
 	PlayLetteboxAnimation("OUT");
 	EquipmentFlyoutFrame:Hide();
@@ -2261,9 +2322,14 @@ function Narci_Open()
 			Vignette.VignetteLeft:SetAlpha(VIGNETTE_ALPHA);
 			Vignette.VignetteRight:SetAlpha(VIGNETTE_ALPHA);
 			Vignette.VignetteRightSmall:SetAlpha(0);
-			FadeFrame(Vignette, 0.5, 1);
-			Vignette.VignetteRight.animIn:Play();
-			Vignette.VignetteLeft.animIn:Play();
+			if IsCameraInstantModeActive() then
+				Vignette:Show();
+				Vignette:SetAlpha(1);
+			else
+				FadeFrame(Vignette, 0.5, 1);
+				Vignette.VignetteRight.animIn:Play();
+				Vignette.VignetteLeft.animIn:Play();
+			end
 			SlotButtonOverlayUtil:UpdateData();
 			After(0, function()
 				SlotController:LazyRefresh();

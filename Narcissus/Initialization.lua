@@ -50,6 +50,7 @@ local DefaultValues = {
     UseEscapeButton = true,                     --Use Escape button to exit
     BaseLineOffset = 0,                         --Ultra-wide, adjust UI layout
     CameraAutoZoomIn = true,                    --Auto zoom in when opening character UI (Master Switch)
+    CameraInstantMode = false,                  --Disable remaining camera motion and fade transitions when Auto Zoom In is off
         CameraTransition = true,                    --(the 2nd you use the character UI) Camera moves smoothly bewtween presets
         CameraOrbit = true,
         UseBustShot = true,                         --Zoom in to the upper torso
