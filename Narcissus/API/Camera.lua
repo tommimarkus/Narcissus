@@ -179,11 +179,6 @@ do  --Move Smooth Yaw/Pitch/Shoulder
 
 
         function CameraUtil:SmoothShoulderByZoom(increment)
-            if ShouldUseInstantShoulder() then
-                local value = GetShoulderOffsetByZoom(GetCameraZoom());
-                self:SmoothShoulder(value, true);
-                return
-            end
             self.Shoulder:SetScript("OnUpdate", SmoothShoulder_OnUpdate_UntilStable);
             self.Shoulder.t = 0;
             self.Shoulder:Show();
