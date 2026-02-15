@@ -2969,13 +2969,13 @@ EL:SetScript("OnEvent",function(self, event, ...)
 			else
 				hooksecurefunc("CameraZoomIn", function(increment)
 					if IS_OPENED and (not Narci.groupPhotoMode) then
-						CameraUtil:SmoothShoulderByZoom(-increment);
+						CameraUtil:SmoothShoulderByZoom(-increment, true);
 					end
 				end)
 
 				hooksecurefunc("CameraZoomOut", function(increment)
 					if IS_OPENED and (not Narci.groupPhotoMode) then
-						CameraUtil:SmoothShoulderByZoom(-increment);
+						CameraUtil:SmoothShoulderByZoom(-increment, true);
 					end
 				end)
 			end
@@ -3081,11 +3081,7 @@ EL:SetScript("OnEvent",function(self, event, ...)
 		self:UnregisterEvent(event);
 		MoveViewRightStop();
 		if IS_OPENED and (not Narci.groupPhotoMode) and IsCameraInstantModeActive() then
-			After(0, function()
-				if IS_OPENED and (not Narci.groupPhotoMode) and IsCameraInstantModeActive() then
-					CameraUtil:SmoothShoulderByZoom();
-				end
-			end);
+			CameraUtil:SmoothShoulderByZoom(nil, true);
 		end
 		if Narci.isAFK and Narci.isActive then
 			--exit when entering combat during AFK mode

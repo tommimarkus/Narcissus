@@ -178,7 +178,7 @@ do  --Move Smooth Yaw/Pitch/Shoulder
         end
 
 
-        function CameraUtil:SmoothShoulderByZoom(increment)
+        function CameraUtil:SmoothShoulderByZoom(increment, forceStable)
             if ShouldUseInstantShoulder() then
                 local zoomGoal = self:GetDefaultZoomGoal() or 0;
                 local zoom = GetCameraZoom();
