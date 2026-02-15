@@ -3080,6 +3080,13 @@ EL:SetScript("OnEvent",function(self, event, ...)
 	elseif event == "PLAYER_STARTED_MOVING" then
 		self:UnregisterEvent(event);
 		MoveViewRightStop();
+		if IS_OPENED and (not Narci.groupPhotoMode) and IsCameraInstantModeActive() then
+			After(0, function()
+				if IS_OPENED and (not Narci.groupPhotoMode) and IsCameraInstantModeActive() then
+					CameraUtil:SmoothShoulderByZoom();
+				end
+			end);
+		end
 		if Narci.isAFK and Narci.isActive then
 			--exit when entering combat during AFK mode
 			MiniButton:Click();
