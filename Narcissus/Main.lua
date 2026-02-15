@@ -286,15 +286,15 @@ local function SetCharacterUILayout(useCentered)
 		rightBaseX = x or -496;
 	end
 
-	local shift = 0;
+	local leftTargetX, rightTargetX;
 	if useCentered then
-		local rightBaseAbsX = frameWidth + rightBaseX;
-		local baseCenterX = 0.5 * (leftBaseX + rightBaseAbsX);
-		shift = frameWidth * 0.5 - baseCenterX;
+		-- Keep the right panel width stable; mirror left line around screen center.
+		rightTargetX = rightBaseX;
+		leftTargetX = -rightBaseX;
+	else
+		leftTargetX = leftBaseX;
+		rightTargetX = rightBaseX;
 	end
-
-	local leftTargetX = leftBaseX + shift;
-	local rightTargetX = rightBaseX + shift;
 
 	VirtualLineLeft:ClearAllPoints();
 	VirtualLineLeft:SetPoint("LEFT", leftTargetX, 0);
