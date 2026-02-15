@@ -84,13 +84,36 @@ git add -A
 git commit -m "<feat|fix|refactor|chore>: <final summary>"
 ```
 
-4. Push and publish:
+4. Choose completion mode:
+
+Local complete (default while iterating):
+- Keep the branch local and do not push.
+- Switch back to `main` for the next task.
+
+```bash
+git checkout main
+```
+
+Publish complete (when ready to share/review):
 
 ```bash
 git push -u origin HEAD
 ```
 
-5. Open PR to `main`.
+5. If published, open PR to `main`.
+
+## Local Branch Hygiene
+When a local task branch is done and merged/cherry-picked later, delete it locally:
+
+```bash
+git branch -d <task-branch>
+```
+
+If Git blocks deletion because it is unmerged and you intentionally want to remove it:
+
+```bash
+git branch -D <task-branch>
+```
 
 ## Completion Proof (Required)
 At the end of every task, capture and share these exact commands/output summary:
