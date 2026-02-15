@@ -187,6 +187,7 @@ do  --Move Smooth Yaw/Pitch/Shoulder
                 end
                 local value = GetShoulderOffsetByZoom(zoom);
                 self:SmoothShoulder(value, true);
+                return
             end
 
             self.Shoulder:SetScript("OnUpdate", SmoothShoulder_OnUpdate_UntilStable);
