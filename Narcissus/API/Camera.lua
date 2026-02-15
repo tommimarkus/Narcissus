@@ -47,6 +47,10 @@ do  --Move Smooth Yaw/Pitch/Shoulder
     local ANGLE_SMOOTH_DURATION = 1.5;
     local SHOULDER_SMOOTH_DURATION = 1.0;
 
+    local function ShouldUseInstantShoulder()
+        return Narci and Narci.isActive and NarcissusDB and NarcissusDB.CameraInstantMode and (not Narci.isAFK) and (not Narci.groupPhotoMode)
+    end
+
     local function CreateProcessFrame(onUpdateFunc)
         local f = CreateFrame("Frame");
         f:Hide();
@@ -168,6 +172,10 @@ do  --Move Smooth Yaw/Pitch/Shoulder
 
 
         function CameraUtil:SmoothShoulderByZoom(increment)
+            if ShouldUseInstantShoulder() then
+                self:InstantShoulderByZoom();
+                return
+            end
             self.Shoulder:SetScript("OnUpdate", SmoothShoulder_OnUpdate_UntilStable);
             self.Shoulder.t = 0;
             self.Shoulder:Show();
@@ -194,8 +202,19 @@ do  --Move Smooth Yaw/Pitch/Shoulder
                     local goal = self:GetDefaultZoomGoal();
                     if current < goal then          --We only zoom out in this situation
                         self:ZoomTo(goal);
+                        if ShouldUseInstantShoulder() then
+                            After(0, function()
+                                if ShouldUseInstantShoulder() then
+                                    self:InstantShoulderByZoom();
+                                end
+                            end);
+                        end
                     else
-                        CameraZoomIn(0);            --Incur shoulder update
+                        if ShouldUseInstantShoulder() then
+                            self:InstantShoulderByZoom();
+                        else
+                            CameraZoomIn(0);            --Incur shoulder update
+                        end
                     end
                     self.cameraChanging = nil;
                 end);
