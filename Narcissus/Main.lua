@@ -325,6 +325,11 @@ function IntroMotion:Enter()
 	if instantMode or (not NarcissusDB.CameraAutoZoomIn) then
 		if instantMode then
 			CameraUtil:SmoothShoulderByZoom();
+			After(0.2, function()
+				if IS_OPENED and IsCameraInstantModeActive() then
+					CameraUtil:SmoothShoulderByZoom();
+				end
+			end);
 			self:ShowFrame(true);
 			UIParentFade:HideUIParent();
 		else
@@ -452,6 +457,7 @@ local function ExitFunc()
 	local instantMode = IsCameraInstantModeActive();
 
 	IS_OPENED = false;
+	Narci.isOpening = false;
 	CameraUtil:SetUseMogOffset(false);
 	EL:Hide();
 
@@ -560,6 +566,7 @@ function Narci:EmergencyStop()
 	Narci_Attribute:Hide();
 	Narci_Vignette:Hide();
 	IS_OPENED = false;
+	Narci.isOpening = false;
 	CameraUtil:SetUseMogOffset(false)
 	EL:Hide();
 	CameraUtil:MakeInactive();
@@ -2336,6 +2343,7 @@ function Narci_Open()
 			return
 		end
 		IS_OPENED = true;
+		Narci.isOpening = true;
 		CVarTemp:BackUp();
 		Toolbar:ShowUI("Narcissus");
 		ViewProfile:SaveView(5);
@@ -2392,6 +2400,7 @@ function Narci_Open()
 		end);
 
 		Narci.refreshCombatRatings = true;
+		Narci.isOpening = false;
 		Narci.isActive = true;
 		CallbackRegistry:Trigger("NarcissusCharacterUI.ShownState", true);
 	else
@@ -2407,6 +2416,7 @@ function Narci_OpenGroupPhoto()
 			return;
 		end
 		IS_OPENED = true;
+		Narci.isOpening = false;
 		CVarTemp:BackUp();
 		Toolbar:ShowUI("PhotoMode");
 		ViewProfile:SaveView(5);
