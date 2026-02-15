@@ -324,7 +324,10 @@ function IntroMotion:Enter()
 	local instantMode = IsCameraInstantModeActive();
 	if instantMode or (not NarcissusDB.CameraAutoZoomIn) then
 		if instantMode then
-			CameraUtil:SmoothShoulderByZoom();
+			if CameraUtil.Shoulder then
+				CameraUtil.Shoulder:Hide();
+			end
+			SetCVar("test_cameraOverShoulder", 0);
 			self:ShowFrame(true);
 			UIParentFade:HideUIParent();
 		else
@@ -2514,7 +2517,14 @@ local function ActivateMogMode()
 		if Toolbar:IsShown() then
 			Narci_GuideLineFrame.VirtualLineRight.AnimFrame:Show();
 			FadeFrame(Narci_Attribute, 0.5, 1);
-			CameraUtil:SmoothShoulderByZoom();
+			if IsCameraInstantModeActive() then
+				if CameraUtil.Shoulder then
+					CameraUtil.Shoulder:Hide();
+				end
+				SetCVar("test_cameraOverShoulder", 0);
+			else
+				CameraUtil:SmoothShoulderByZoom();
+			end
 		end
 		FadeFrame(Narci_XmogNameFrame, 0.2, 0);
 		ShowAttributeButton();
@@ -2972,25 +2982,25 @@ EL:SetScript("OnEvent",function(self, event, ...)
 			end
 		end
 
-		After(1.7, function()
-			UpdateCharacterInfoFrame();
+			After(1.7, function()
+				UpdateCharacterInfoFrame();
 
-			if CVarTemp.isDynamicCamLoaded then
-				CameraUtil:UpdateMovementMethodForDynamicCam();
-			else
-				hooksecurefunc("CameraZoomIn", function(increment)
-					if IS_OPENED and (not Narci.groupPhotoMode) then
-						CameraUtil:SmoothShoulderByZoom(-increment, true);
-					end
-				end)
+				if CVarTemp.isDynamicCamLoaded then
+					CameraUtil:UpdateMovementMethodForDynamicCam();
+				else
+					hooksecurefunc("CameraZoomIn", function(increment)
+						if IS_OPENED and (not Narci.groupPhotoMode) and (not IsCameraInstantModeActive()) then
+							CameraUtil:SmoothShoulderByZoom(-increment, true);
+						end
+					end)
 
-				hooksecurefunc("CameraZoomOut", function(increment)
-					if IS_OPENED and (not Narci.groupPhotoMode) then
-						CameraUtil:SmoothShoulderByZoom(-increment, true);
-					end
-				end)
-			end
-		end)
+					hooksecurefunc("CameraZoomOut", function(increment)
+						if IS_OPENED and (not Narci.groupPhotoMode) and (not IsCameraInstantModeActive()) then
+							CameraUtil:SmoothShoulderByZoom(-increment, true);
+						end
+					end)
+				end
+			end)
 
 		if TimerunningUtil.IsTimerunningMode() then
 			Narci.deferGemManager = true;
@@ -3091,9 +3101,6 @@ EL:SetScript("OnEvent",function(self, event, ...)
 	elseif event == "PLAYER_STARTED_MOVING" then
 		self:UnregisterEvent(event);
 		MoveViewRightStop();
-		if IS_OPENED and (not Narci.groupPhotoMode) and IsCameraInstantModeActive() then
-			CameraUtil:SmoothShoulderByZoom(nil, true);
-		end
 		if Narci.isAFK and Narci.isActive then
 			--exit when entering combat during AFK mode
 			MiniButton:Click();

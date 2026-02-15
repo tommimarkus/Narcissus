@@ -166,7 +166,7 @@ do  --Move Smooth Yaw/Pitch/Shoulder
 
             if ShouldUseInstantShoulder() then
                 self.Shoulder:Hide();
-                SetCVar("test_cameraOverShoulder", toPoint);
+                SetCVar("test_cameraOverShoulder", 0);
                 return
             end
 
@@ -180,13 +180,8 @@ do  --Move Smooth Yaw/Pitch/Shoulder
 
         function CameraUtil:SmoothShoulderByZoom(increment, forceStable)
             if ShouldUseInstantShoulder() then
-                local zoomGoal = self:GetDefaultZoomGoal() or 0;
-                local zoom = GetCameraZoom();
-                if zoom < zoomGoal then
-                    zoom = zoomGoal;
-                end
-                local value = GetShoulderOffsetByZoom(zoom);
-                self:SmoothShoulder(value, true);
+                self.Shoulder:Hide();
+                SetCVar("test_cameraOverShoulder", 0);
                 return
             end
 
