@@ -262,6 +262,59 @@ local function IsCameraInstantModeActive()
 	return NarcissusDB and NarcissusDB.CameraInstantMode and (not Narci.isAFK)
 end
 
+local function SetCharacterUILayout(useCentered)
+	local GuideLineFrame = Narci_GuideLineFrame;
+	if not GuideLineFrame then
+		return
+	end
+
+	local VirtualLineLeft = GuideLineFrame.VirtualLineLeft;
+	local VirtualLineRight = GuideLineFrame.VirtualLineRight;
+	if (not VirtualLineLeft) or (not VirtualLineRight) then
+		return
+	end
+
+	local frameWidth = GuideLineFrame:GetWidth();
+	if (not frameWidth) or frameWidth <= 0 then
+		return
+	end
+
+	local leftBaseX = VirtualLineLeft.defaultX or 80;
+	local rightBaseX = VirtualLineRight.defaultX;
+	if rightBaseX == nil then
+		local _, _, _, x = VirtualLineRight:GetPoint();
+		rightBaseX = x or -496;
+	end
+
+	local shift = 0;
+	if useCentered then
+		local rightBaseAbsX = frameWidth + rightBaseX;
+		local baseCenterX = 0.5 * (leftBaseX + rightBaseAbsX);
+		shift = frameWidth * 0.5 - baseCenterX;
+	end
+
+	local leftTargetX = leftBaseX + shift;
+	local rightTargetX = rightBaseX + shift;
+
+	VirtualLineLeft:ClearAllPoints();
+	VirtualLineLeft:SetPoint("LEFT", leftTargetX, 0);
+
+	VirtualLineRight:ClearAllPoints();
+	VirtualLineRight:SetPoint("RIGHT", rightTargetX, 0);
+
+	local LeftAnimFrame = VirtualLineLeft.AnimFrame;
+	if LeftAnimFrame then
+		LeftAnimFrame.anchorPoint = "LEFT";
+		LeftAnimFrame.toX = leftTargetX;
+	end
+
+	local RightAnimFrame = VirtualLineRight.AnimFrame;
+	if RightAnimFrame then
+		RightAnimFrame.anchorPoint = "RIGHT";
+		RightAnimFrame.toX = rightTargetX;
+	end
+end
+
 local function SetLetterboxStateInstant(show)
 	local frame = Narci_FullScreenMask;
 	if not frame then
@@ -322,6 +375,7 @@ end
 
 function IntroMotion:Enter()
 	local instantMode = IsCameraInstantModeActive();
+	SetCharacterUILayout(instantMode);
 	if instantMode or (not NarcissusDB.CameraAutoZoomIn) then
 		if instantMode then
 			if CameraUtil.Shoulder then
@@ -458,6 +512,7 @@ local function ExitFunc()
 	Narci.isOpening = false;
 	CameraUtil:SetUseMogOffset(false);
 	EL:Hide();
+	SetCharacterUILayout(false);
 
 	MoveViewRightStop();
 	CameraUtil:RestoreMotionSickness();
@@ -2433,6 +2488,7 @@ function Narci_OpenGroupPhoto()
 		CameraUtil:UpdateParameters();
 		CameraUtil:MakeActive();
 		SetCVar("test_cameraDynamicPitch", 1);
+		SetCharacterUILayout(false);
 
 		EL:Show();
 
@@ -2513,11 +2569,19 @@ local function ActivateMogMode()
 		MsgAlertContainer:Display();
 		UseXmogLayout();
 	else
-		Narci_GuideLineFrame.VirtualLineRight.AnimFrame.toX = Narci_GuideLineFrame.VirtualLineRight.AnimFrame.defaultX;
+		local instantMode = IsCameraInstantModeActive();
+		if instantMode then
+			SetCharacterUILayout(true);
+			Narci_GuideLineFrame_SnapToFinalPosition();
+		else
+			Narci_GuideLineFrame.VirtualLineRight.AnimFrame.toX = Narci_GuideLineFrame.VirtualLineRight.AnimFrame.defaultX;
+		end
 		if Toolbar:IsShown() then
-			Narci_GuideLineFrame.VirtualLineRight.AnimFrame:Show();
+			if not instantMode then
+				Narci_GuideLineFrame.VirtualLineRight.AnimFrame:Show();
+			end
 			FadeFrame(Narci_Attribute, 0.5, 1);
-			if IsCameraInstantModeActive() then
+			if instantMode then
 				if CameraUtil.Shoulder then
 					CameraUtil.Shoulder:Hide();
 				end
@@ -3225,15 +3289,27 @@ function Narci_GuideLineFrame_OnSizing(self, offset)
 
 	local C = W*0.618;
 
-	self.VirtualLineRight:SetPoint("RIGHT", C - W +32, 0);
-	self.VirtualLineRight.defaultX = C - W +32;
+	local VirtualLineLeft = self.VirtualLineLeft;
+	VirtualLineLeft.defaultX = 80;
+	VirtualLineLeft:SetPoint("LEFT", VirtualLineLeft.defaultX, 0);
 
-	local AnimFrame = self.VirtualLineRight.AnimFrame;
-	AnimFrame.OppoDirection = false;
-	AnimFrame.TimeSinceLastUpdate = 0;
+	local VirtualLineRight = self.VirtualLineRight;
+	VirtualLineRight:SetPoint("RIGHT", C - W +32, 0);
+	VirtualLineRight.defaultX = C - W +32;
 
-	AnimFrame.anchorPoint, AnimFrame.relativeTo, AnimFrame.relativePoint, AnimFrame.toX, AnimFrame.toY = AnimFrame:GetParent():GetPoint();
-	AnimFrame.defaultX = AnimFrame.toX;
+	local LeftAnimFrame = VirtualLineLeft.AnimFrame;
+	LeftAnimFrame.OppoDirection = false;
+	LeftAnimFrame.TimeSinceLastUpdate = 0;
+	LeftAnimFrame.anchorPoint, LeftAnimFrame.relativeTo, LeftAnimFrame.relativePoint, LeftAnimFrame.toX, LeftAnimFrame.toY = VirtualLineLeft:GetPoint();
+	LeftAnimFrame.defaultX = LeftAnimFrame.toX;
+
+	local RightAnimFrame = VirtualLineRight.AnimFrame;
+	RightAnimFrame.OppoDirection = false;
+	RightAnimFrame.TimeSinceLastUpdate = 0;
+	RightAnimFrame.anchorPoint, RightAnimFrame.relativeTo, RightAnimFrame.relativePoint, RightAnimFrame.toX, RightAnimFrame.toY = VirtualLineRight:GetPoint();
+	RightAnimFrame.defaultX = RightAnimFrame.toX;
+
+	SetCharacterUILayout(Narci and Narci.isActive and IsCameraInstantModeActive());
 end
 
 function Narci_GuideLineFrame_SnapToFinalPosition()
