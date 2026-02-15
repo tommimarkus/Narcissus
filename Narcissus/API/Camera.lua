@@ -224,6 +224,18 @@ do  --Move Smooth Yaw/Pitch/Shoulder
                 MoveViewRightStart(self:GetOrbitYawSpeed());
             end
         end
+
+        function CameraUtil:InstantShoulderByZoom()
+            local zoom = GetCameraZoom();
+            local shoulderOffset = GetShoulderOffsetByZoom(zoom);
+            if shoulderOffset < 0 then
+                shoulderOffset = 0;
+            end
+            if self.Shoulder then
+                self.Shoulder:Hide();
+            end
+            SetCVar("test_cameraOverShoulder", shoulderOffset);
+        end
     end
 end
 

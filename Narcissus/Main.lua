@@ -324,6 +324,7 @@ function IntroMotion:Enter()
 	local instantMode = IsCameraInstantModeActive();
 	if instantMode or (not NarcissusDB.CameraAutoZoomIn) then
 		if instantMode then
+			CameraUtil:InstantShoulderByZoom();
 			self:ShowFrame(true);
 			UIParentFade:HideUIParent();
 		else
