@@ -263,7 +263,8 @@ local function IsCameraInstantModeActive()
 end
 
 local function SetCharacterUILayout(useCentered)
-	local MIN_RIGHT_PANEL_WIDTH = 420;
+	local BASE_RIGHT_PANEL_WIDTH = 420;
+	local MIN_ALLOWED_RIGHT_PANEL_WIDTH = 280;
 	local CENTER_GAP_EXTRA = 128;
 
 	local GuideLineFrame = Narci_GuideLineFrame;
@@ -291,14 +292,15 @@ local function SetCharacterUILayout(useCentered)
 
 	local rightTargetX;
 	if useCentered then
+		local minRightPanelWidth = math.max(MIN_ALLOWED_RIGHT_PANEL_WIDTH, BASE_RIGHT_PANEL_WIDTH - CENTER_GAP_EXTRA);
 		local rightBaseAbsX = frameWidth + rightBaseX;
 		local baseCenterX = 0.5 * (leftBaseX + rightBaseAbsX);
 		local fullCenterShift = frameWidth * 0.5 - baseCenterX;
-		local maxShift = math.max(0, -rightBaseX - MIN_RIGHT_PANEL_WIDTH);
+		local maxShift = math.max(0, -rightBaseX - minRightPanelWidth);
 		local shift = math.min(math.max(fullCenterShift, 0), maxShift);
 		rightTargetX = rightBaseX + shift + CENTER_GAP_EXTRA;
-		if rightTargetX > -MIN_RIGHT_PANEL_WIDTH then
-			rightTargetX = -MIN_RIGHT_PANEL_WIDTH;
+		if rightTargetX > -minRightPanelWidth then
+			rightTargetX = -minRightPanelWidth;
 		end
 	else
 		rightTargetX = rightBaseX;
