@@ -467,24 +467,31 @@ local function ExitFunc()
 		SetCVar("test_cameraDynamicPitch", 0);								--Note: "test_cameraDynamicPitch" may cause camera to jitter while reseting the player's view
 		if instantMode then
 			SetCVar("test_cameraOverShoulder", 0);
+			ConsoleExec( "actioncam off" );
 		else
 			CameraUtil:SmoothShoulder(0);
+			After(1, function()
+				if IS_OPENED then
+					return
+				end
+				ConsoleExec( "actioncam off" );
+				MoveViewRightStop();
+			end)
 		end
-		After(1, function()
-			ConsoleExec( "actioncam off" );
-			MoveViewRightStop();
-		end)
 	else
 		--Restore the acioncam state
 		if instantMode then
 			SetCVar("test_cameraOverShoulder", CVarTemp.shoulderOffset);
 		else
 			CameraUtil:SmoothShoulder(CVarTemp.shoulderOffset);
+			After(1, function()
+				if IS_OPENED then
+					return
+				end
+				MoveViewRightStop();
+			end)
 		end
 		SetCVar("test_cameraDynamicPitch", CVarTemp.dynamicPitch);
-		After(1, function()
-			MoveViewRightStop();
-		end)
 	end
 
 	ConsoleExec("pitchlimit 88");
@@ -503,6 +510,10 @@ local function ExitFunc()
 	end
 
 	local function RestoreCameraView()
+		if IS_OPENED then
+			return
+		end
+
 		if instantMode or (not IntroMotion.useCameraTransition) then
 			SetCVar("cameraViewBlendStyle", 2);
 		end
