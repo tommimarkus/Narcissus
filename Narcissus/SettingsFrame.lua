@@ -718,8 +718,30 @@ local function CameraAutoZoomIn_SetupDescription(self)
     end
 end
 
+local function GetOptionButtonByKey(dbKey)
+    if OptionButtons then
+        for _, button in ipairs(OptionButtons) do
+            if button.key == dbKey then
+                return button
+            end
+        end
+    end
+end
+
+local function UpdateInstantModeAvailability()
+    local instantModeButton = GetOptionButtonByKey("CameraInstantMode");
+    if not instantModeButton then return end
+
+    local enabled = not DB["CameraAutoZoomIn"];
+
+    instantModeButton:EnableMouse(enabled);
+    instantModeButton:EnableMouseMotion(enabled);
+    instantModeButton:SetAlpha(enabled and 1 or 0.25);
+end
+
 local function CameraAutoZoomIn_OnValueChanged(self, value)
     CameraAutoZoomIn_SetupDescription(self);
+    UpdateInstantModeAvailability();
 end
 
 local function CameraInstantMode_SetupDescription(self)
@@ -736,6 +758,11 @@ end
 
 local function CameraInstantMode_OnValueChanged(self, value)
     CameraInstantMode_SetupDescription(self);
+end
+
+local function CameraInstantMode_Setup(self)
+    CameraInstantMode_SetupDescription(self);
+    UpdateInstantModeAvailability();
 end
 
 local function CameraTransition_SetupDescription(self)
@@ -1874,10 +1901,10 @@ local Categories = {
         widgets = {
             {type = "header", level = 0, text = L["Camera"]},
             {type = "checkbox", level = 1, key = "CameraAutoZoomIn", text = L["Camera Auto Zoom In"], onValueChangedFunc = CameraAutoZoomIn_OnValueChanged, description = L["Camera Auto Zoom In Off"], setupFunc = CameraAutoZoomIn_SetupDescription, isNewFeature = true},
-            {type = "checkbox", level = 1, key = "CameraInstantMode", text = L["Instant Mode"], onValueChangedFunc = CameraInstantMode_OnValueChanged, description = L["Instant Mode Description Off"], setupFunc = CameraInstantMode_SetupDescription},
             {type = "checkbox", level = 3, key = "CameraTransition", text = L["Camera Transition"], isChild = true, onValueChangedFunc = CameraTransition_OnValueChanged, description = L["Camera Transition Description Off"], setupFunc = CameraTransition_SetupDescription},
             {type = "checkbox", level = 3, key = "CameraOrbit", text = L["Orbit Camera"], isChild = true, onValueChangedFunc = CameraOrbitToggle_OnValueChanged, description = L["Orbit Camera Description On"], setupFunc = CameraOrbitToggle_SetupDescription},
             {type = "checkbox", level = 3, key = "UseBustShot", text = L["Use Bust Shot"], isChild = true, onValueChangedFunc = CameraUseBustShot_OnValueChanged},
+            {type = "checkbox", level = 1, key = "CameraInstantMode", text = L["Instant Mode"], onValueChangedFunc = CameraInstantMode_OnValueChanged, description = L["Instant Mode Description Off"], setupFunc = CameraInstantMode_Setup},
             {type = "checkbox", level = 1, key = "CameraSafeMode", text = L["Camera Safe Mode"], onValueChangedFunc = CameraSafeToggle_OnValueChanged, description = L["Camera Safe Mode Description"], validityCheckFunc = CameraSafeToggle_IsValid},
         },
     },
