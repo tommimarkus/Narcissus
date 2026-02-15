@@ -297,8 +297,13 @@ local function SetCharacterUILayout(useCentered)
 		shift = math.min(math.max(fullCenterShift, 0), maxShift);
 	end
 
-	local leftTargetX = leftBaseX + shift;
 	local rightTargetX = rightBaseX + shift;
+	local leftTargetX;
+	if useCentered then
+		leftTargetX = -rightTargetX;
+	else
+		leftTargetX = leftBaseX;
+	end
 
 	VirtualLineLeft:ClearAllPoints();
 	VirtualLineLeft:SetPoint("LEFT", leftTargetX, 0);
