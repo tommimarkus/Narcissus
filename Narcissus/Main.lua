@@ -264,7 +264,7 @@ end
 
 local function SetCharacterUILayout(useCentered)
 	local MIN_RIGHT_PANEL_WIDTH = 420;
-	local CENTER_GAP_EXTRA = 12;
+	local CENTER_GAP_EXTRA = 16;
 
 	local GuideLineFrame = Narci_GuideLineFrame;
 	if not GuideLineFrame then
