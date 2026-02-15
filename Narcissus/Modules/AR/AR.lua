@@ -21,10 +21,20 @@ if not GetFacing then return; end;
 
 local VirtualLineRight = Narci_VirtualLineRight;
 local VirtualLineLeft = Narci_VirtualLineLeft;
-local _, _, _, rightBase = VirtualLineRight:GetPoint();
-local _, _, _, leftBase = VirtualLineLeft:GetPoint();
 
 local function UpdateReferenceLine(offset, multiplier)
+    local rightBase = VirtualLineRight.referenceBaseX;
+    if rightBase == nil then
+        local _, _, _, x = VirtualLineRight:GetPoint();
+        rightBase = x or 0;
+    end
+
+    local leftBase = VirtualLineLeft.referenceBaseX;
+    if leftBase == nil then
+        local _, _, _, x = VirtualLineLeft:GetPoint();
+        leftBase = x or 0;
+    end
+
     local ScaledOffset = offset * multiplier;    --Strengh
     VirtualLineRight:ClearAllPoints();
     VirtualLineRight:SetPoint("RIGHT", rightBase + ScaledOffset, 0);

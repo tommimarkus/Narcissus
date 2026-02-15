@@ -264,6 +264,7 @@ end
 
 local function SetCharacterUILayout(useCentered)
 	local MIN_RIGHT_PANEL_WIDTH = 420;
+	local CENTER_GAP_EXTRA = 12;
 
 	local GuideLineFrame = Narci_GuideLineFrame;
 	if not GuideLineFrame then
@@ -288,16 +289,21 @@ local function SetCharacterUILayout(useCentered)
 		rightBaseX = x or -496;
 	end
 
-	local shift = 0;
+	local rightTargetX;
 	if useCentered then
 		local rightBaseAbsX = frameWidth + rightBaseX;
 		local baseCenterX = 0.5 * (leftBaseX + rightBaseAbsX);
 		local fullCenterShift = frameWidth * 0.5 - baseCenterX;
 		local maxShift = math.max(0, -rightBaseX - MIN_RIGHT_PANEL_WIDTH);
-		shift = math.min(math.max(fullCenterShift, 0), maxShift);
+		local shift = math.min(math.max(fullCenterShift, 0), maxShift);
+		rightTargetX = rightBaseX + shift + CENTER_GAP_EXTRA;
+		if rightTargetX > -MIN_RIGHT_PANEL_WIDTH then
+			rightTargetX = -MIN_RIGHT_PANEL_WIDTH;
+		end
+	else
+		rightTargetX = rightBaseX;
 	end
 
-	local rightTargetX = rightBaseX + shift;
 	local leftTargetX;
 	if useCentered then
 		leftTargetX = -rightTargetX;
@@ -322,6 +328,9 @@ local function SetCharacterUILayout(useCentered)
 		RightAnimFrame.anchorPoint = "RIGHT";
 		RightAnimFrame.toX = rightTargetX;
 	end
+
+	VirtualLineLeft.referenceBaseX = leftTargetX;
+	VirtualLineRight.referenceBaseX = rightTargetX;
 end
 
 local function SetLetterboxStateInstant(show)
