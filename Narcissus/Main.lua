@@ -259,7 +259,7 @@ function ViewProfile:ResetView(index)
 end
 
 local function IsCameraInstantModeActive()
-	return NarcissusDB and (not NarcissusDB.CameraAutoZoomIn) and NarcissusDB.CameraInstantMode
+	return NarcissusDB and NarcissusDB.CameraInstantMode and (not Narci.isAFK)
 end
 
 local function SetLetterboxStateInstant(show)
@@ -321,8 +321,8 @@ function IntroMotion:InstantZoomIn()
 end
 
 function IntroMotion:Enter()
-	if not NarcissusDB.CameraAutoZoomIn then
-		local instantMode = IsCameraInstantModeActive();
+	local instantMode = IsCameraInstantModeActive();
+	if instantMode or (not NarcissusDB.CameraAutoZoomIn) then
 		if instantMode then
 			self:ShowFrame(true);
 			UIParentFade:HideUIParent();

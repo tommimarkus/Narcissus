@@ -20,7 +20,7 @@ local MiniButton;
 local DURATION_LOCK = 1;
 
 local function IsCameraInstantModeActive()
-	return NarcissusDB and (not NarcissusDB.CameraAutoZoomIn) and NarcissusDB.CameraInstantMode
+	return NarcissusDB and NarcissusDB.CameraInstantMode and (not Narci.isAFK)
 end
 
 local function GetClickLockDuration()

@@ -718,30 +718,8 @@ local function CameraAutoZoomIn_SetupDescription(self)
     end
 end
 
-local function GetOptionButtonByKey(dbKey)
-    if OptionButtons then
-        for _, button in ipairs(OptionButtons) do
-            if button.key == dbKey then
-                return button
-            end
-        end
-    end
-end
-
-local function UpdateInstantModeAvailability()
-    local instantModeButton = GetOptionButtonByKey("CameraInstantMode");
-    if not instantModeButton then return end
-
-    local enabled = not DB["CameraAutoZoomIn"];
-
-    instantModeButton:EnableMouse(enabled);
-    instantModeButton:EnableMouseMotion(enabled);
-    instantModeButton:SetAlpha(enabled and 1 or 0.25);
-end
-
 local function CameraAutoZoomIn_OnValueChanged(self, value)
     CameraAutoZoomIn_SetupDescription(self);
-    UpdateInstantModeAvailability();
 end
 
 local function CameraInstantMode_SetupDescription(self)
@@ -762,7 +740,6 @@ end
 
 local function CameraInstantMode_Setup(self)
     CameraInstantMode_SetupDescription(self);
-    UpdateInstantModeAvailability();
 end
 
 local function CameraTransition_SetupDescription(self)
@@ -1861,6 +1838,7 @@ local Categories = {
             {type = "checkbox", level = 1, key = "DetailedIlvlInfo", text = L["Show Detailed Stats"], onValueChangedFunc = ShowDetailedStats_OnValueChanged},
             {type = "checkbox", level = 1, key = "AFKScreen", text = L["AFK Screen Description"], onValueChangedFunc = AFKToggle_OnValueChanged, },
                 {type = "checkbox", level = 3, key = "AKFScreenDelay", text = L["AFK Screen Delay"], onValueChangedFunc = nil, isChild = true},
+            {type = "checkbox", level = 1, key = "CameraInstantMode", text = L["Instant Mode"], onValueChangedFunc = CameraInstantMode_OnValueChanged, description = L["Instant Mode Description Off"], setupFunc = CameraInstantMode_Setup},
             {type = "subheader", level = 1, text = L["Item Names"], extraTopPadding = 1},
             {type = "slider", level = 1, key = "FontHeightItemName", text = FONT_SIZE, onValueChangedFunc = ItemNameHeight_OnValueChanged, minValue = 10, maxValue = 12, valueStep = 1, },
             {type = "slider", level = 1, key = "ItemNameWidth", text = L["Text Width"], onValueChangedFunc = ItemNameWidth_OnValueChanged, minValue = 100, maxValue = 200, valueStep = 20, },
@@ -1904,7 +1882,6 @@ local Categories = {
             {type = "checkbox", level = 3, key = "CameraTransition", text = L["Camera Transition"], isChild = true, onValueChangedFunc = CameraTransition_OnValueChanged, description = L["Camera Transition Description Off"], setupFunc = CameraTransition_SetupDescription},
             {type = "checkbox", level = 3, key = "CameraOrbit", text = L["Orbit Camera"], isChild = true, onValueChangedFunc = CameraOrbitToggle_OnValueChanged, description = L["Orbit Camera Description On"], setupFunc = CameraOrbitToggle_SetupDescription},
             {type = "checkbox", level = 3, key = "UseBustShot", text = L["Use Bust Shot"], isChild = true, onValueChangedFunc = CameraUseBustShot_OnValueChanged},
-            {type = "checkbox", level = 1, key = "CameraInstantMode", text = L["Instant Mode"], onValueChangedFunc = CameraInstantMode_OnValueChanged, description = L["Instant Mode Description Off"], setupFunc = CameraInstantMode_Setup},
             {type = "checkbox", level = 1, key = "CameraSafeMode", text = L["Camera Safe Mode"], onValueChangedFunc = CameraSafeToggle_OnValueChanged, description = L["Camera Safe Mode Description"], validityCheckFunc = CameraSafeToggle_IsValid},
         },
     },

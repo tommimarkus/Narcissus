@@ -37,9 +37,12 @@ end
 
 local function ShowAFKScreen()
     if (not Narci.isActive) and (not InCombatLockdown()) then
+        Narci.isAFK = true;
         CloseWindows();
         Narci_MinimapButton:Click();
-        Narci.isAFK = true;
+        if not Narci.isActive then
+            Narci.isAFK = false;
+        end
     end
 end
 
