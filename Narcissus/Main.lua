@@ -263,6 +263,8 @@ local function IsCameraInstantModeActive()
 end
 
 local function SetCharacterUILayout(useCentered)
+	local MIN_RIGHT_PANEL_WIDTH = 420;
+
 	local GuideLineFrame = Narci_GuideLineFrame;
 	if not GuideLineFrame then
 		return
@@ -286,15 +288,17 @@ local function SetCharacterUILayout(useCentered)
 		rightBaseX = x or -496;
 	end
 
-	local leftTargetX, rightTargetX;
+	local shift = 0;
 	if useCentered then
-		-- Keep the right panel width stable; mirror left line around screen center.
-		rightTargetX = rightBaseX;
-		leftTargetX = -rightBaseX;
-	else
-		leftTargetX = leftBaseX;
-		rightTargetX = rightBaseX;
+		local rightBaseAbsX = frameWidth + rightBaseX;
+		local baseCenterX = 0.5 * (leftBaseX + rightBaseAbsX);
+		local fullCenterShift = frameWidth * 0.5 - baseCenterX;
+		local maxShift = math.max(0, -rightBaseX - MIN_RIGHT_PANEL_WIDTH);
+		shift = math.min(math.max(fullCenterShift, 0), maxShift);
 	end
+
+	local leftTargetX = leftBaseX + shift;
+	local rightTargetX = rightBaseX + shift;
 
 	VirtualLineLeft:ClearAllPoints();
 	VirtualLineLeft:SetPoint("LEFT", leftTargetX, 0);
