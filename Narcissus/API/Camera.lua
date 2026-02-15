@@ -48,7 +48,7 @@ do  --Move Smooth Yaw/Pitch/Shoulder
     local SHOULDER_SMOOTH_DURATION = 1.0;
 
     local function ShouldUseInstantShoulder()
-        return Narci and Narci.isActive and NarcissusDB and NarcissusDB.CameraInstantMode and (not Narci.isAFK) and (not Narci.groupPhotoMode)
+        return NarcissusDB and NarcissusDB.CameraInstantMode and (not Narci.isAFK) and (not Narci.groupPhotoMode)
     end
 
     local function CreateProcessFrame(onUpdateFunc)
@@ -163,6 +163,13 @@ do  --Move Smooth Yaw/Pitch/Shoulder
                     toPoint = 0;
                 end
             end
+
+            if ShouldUseInstantShoulder() then
+                self.Shoulder:Hide();
+                SetCVar("test_cameraOverShoulder", toPoint);
+                return
+            end
+
             self.Shoulder:SetScript("OnUpdate", SmoothShoulder_OnUpdate_ToValue);
             self.Shoulder.t = 0;
             self.Shoulder.toPoint = toPoint;
@@ -173,7 +180,8 @@ do  --Move Smooth Yaw/Pitch/Shoulder
 
         function CameraUtil:SmoothShoulderByZoom(increment)
             if ShouldUseInstantShoulder() then
-                self:InstantShoulderByZoom();
+                local value = GetShoulderOffsetByZoom(GetCameraZoom());
+                self:SmoothShoulder(value, true);
                 return
             end
             self.Shoulder:SetScript("OnUpdate", SmoothShoulder_OnUpdate_UntilStable);
@@ -202,19 +210,8 @@ do  --Move Smooth Yaw/Pitch/Shoulder
                     local goal = self:GetDefaultZoomGoal();
                     if current < goal then          --We only zoom out in this situation
                         self:ZoomTo(goal);
-                        if ShouldUseInstantShoulder() then
-                            After(0, function()
-                                if ShouldUseInstantShoulder() then
-                                    self:InstantShoulderByZoom();
-                                end
-                            end);
-                        end
                     else
-                        if ShouldUseInstantShoulder() then
-                            self:InstantShoulderByZoom();
-                        else
-                            CameraZoomIn(0);            --Incur shoulder update
-                        end
+                        CameraZoomIn(0);            --Incur shoulder update
                     end
                     self.cameraChanging = nil;
                 end);
@@ -244,17 +241,6 @@ do  --Move Smooth Yaw/Pitch/Shoulder
             end
         end
 
-        function CameraUtil:InstantShoulderByZoom()
-            local zoom = GetCameraZoom();
-            local shoulderOffset = GetShoulderOffsetByZoom(zoom);
-            if shoulderOffset < 0 then
-                shoulderOffset = 0;
-            end
-            if self.Shoulder then
-                self.Shoulder:Hide();
-            end
-            SetCVar("test_cameraOverShoulder", shoulderOffset);
-        end
     end
 end
 

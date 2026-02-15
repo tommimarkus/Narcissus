@@ -324,7 +324,7 @@ function IntroMotion:Enter()
 	local instantMode = IsCameraInstantModeActive();
 	if instantMode or (not NarcissusDB.CameraAutoZoomIn) then
 		if instantMode then
-			CameraUtil:InstantShoulderByZoom();
+			CameraUtil:SmoothShoulderByZoom();
 			self:ShowFrame(true);
 			UIParentFade:HideUIParent();
 		else
@@ -3075,13 +3075,6 @@ EL:SetScript("OnEvent",function(self, event, ...)
 	elseif event == "PLAYER_STARTED_MOVING" then
 		self:UnregisterEvent(event);
 		MoveViewRightStop();
-		if IS_OPENED and (not Narci.groupPhotoMode) and IsCameraInstantModeActive() then
-			After(0, function()
-				if IS_OPENED and IsCameraInstantModeActive() then
-					CameraUtil:InstantShoulderByZoom();
-				end
-			end);
-		end
 		if Narci.isAFK and Narci.isActive then
 			--exit when entering combat during AFK mode
 			MiniButton:Click();
