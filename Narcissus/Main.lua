@@ -262,6 +262,25 @@ local function IsCameraInstantModeActive()
 	return NarcissusDB and (not NarcissusDB.CameraAutoZoomIn) and NarcissusDB.CameraInstantMode
 end
 
+local function SetLetterboxStateInstant(show)
+	local frame = Narci_FullScreenMask;
+	if not frame then
+		return
+	end
+
+	frame:StopAnimating();
+
+	if show and NarcissusDB and NarcissusDB.LetterboxEffect then
+		frame:Show();
+		frame.TopMask:Show();
+		frame.BottomMask:Show();
+		frame.BottomButton:Show();
+	else
+		frame.BottomButton:Hide();
+		frame:Hide();
+	end
+end
+
 
 local IntroMotion = {};
 
@@ -481,7 +500,7 @@ local function ExitFunc()
 		UIParentFade:FadeInUIParent();
 	end
 
-	After(0.1, function()
+	local function RestoreCameraView()
 		if instantMode or (not IntroMotion.useCameraTransition) then
 			SetCVar("cameraViewBlendStyle", 2);
 		end
@@ -495,7 +514,13 @@ local function ExitFunc()
 		end
 
 		SetCVar("cameraViewBlendStyle", CVarTemp.cameraViewBlendStyle);
-	end);
+	end
+
+	if instantMode then
+		RestoreCameraView();
+	else
+		After(0.1, RestoreCameraView);
+	end
 
 	Narci.isActive = false;
 	Narci.isAFK = false;
@@ -2288,7 +2313,11 @@ local function Narci_Close()
 		SlotController:PlayAnimOut();
 	end
 	ExitFunc();
-	PlayLetteboxAnimation("OUT");
+	if IsCameraInstantModeActive() then
+		SetLetterboxStateInstant(false);
+	else
+		PlayLetteboxAnimation("OUT");
+	end
 	EquipmentFlyoutFrame:Hide();
 	Narci_ModelSettings:Hide();
 
@@ -2316,8 +2345,16 @@ function Narci_Open()
 		IntroMotion:Enter();
 
 		After(0, function()
+			if not IS_OPENED then
+				return
+			end
+
 			RadarChart:SetValue(0,0,0,0,1);
-			PlayLetteboxAnimation();
+			if IsCameraInstantModeActive() then
+				SetLetterboxStateInstant(true);
+			else
+				PlayLetteboxAnimation();
+			end
 			local Vignette = Narci_Vignette;
 			Vignette.VignetteLeft:SetAlpha(VIGNETTE_ALPHA);
 			Vignette.VignetteRight:SetAlpha(VIGNETTE_ALPHA);
@@ -2332,6 +2369,9 @@ function Narci_Open()
 			end
 			SlotButtonOverlayUtil:UpdateData();
 			After(0, function()
+				if not IS_OPENED then
+					return
+				end
 				SlotController:LazyRefresh();
 				StatsUpdator:Gradual();
 			end);
