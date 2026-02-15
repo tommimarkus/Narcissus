@@ -980,9 +980,10 @@ function NarciEquipmentSlotMixin:SetTransmogSourceID(appliedSourceID, secondaryS
 	end
 end
 
-function NarciEquipmentSlotMixin:Refresh(forceRefresh)
+function NarciEquipmentSlotMixin:Refresh(forceRefresh, disableAnimations)
 	local _;
 	local slotID = self.slotID;
+	local playAnimation = self:IsVisible() and (not disableAnimations) and (not IsCameraInstantModeActive());
 	local itemLocation = ItemLocation:CreateFromEquipmentSlot(slotID);
 	--print(slotName..slotID)
 	--local texture = CharacterHeadSlot.popoutButton.icon:GetTexture()
@@ -1333,13 +1334,13 @@ function NarciEquipmentSlotMixin:Refresh(forceRefresh)
 		self.GemSlot.GemIcon:SetTexture(gemIcon);
 		self.GemSlot.GemIcon:Show();
 		self.GemSlot.sockedGemItemID = gemID;
-		if self:IsVisible() then
+		if playAnimation then
 			self.GemSlot:FadeIn();
 		else
 			self.GemSlot:ShowSlot();
 		end
 	else
-		if self:IsVisible() then
+		if playAnimation then
 			self.GemSlot:FadeOut();
 		else
 			self.GemSlot:HideSlot();
@@ -1348,7 +1349,7 @@ function NarciEquipmentSlotMixin:Refresh(forceRefresh)
 	end
 
 	--------------------------------------------------
-	if self:IsVisible() then
+	if playAnimation then
 		self:SetBorderTexture(self.Border, borderTexKey);
 		if itemIcon then
 			self.IconOverlay:SetTexture(itemIcon);
@@ -1724,7 +1725,7 @@ SlotController.updateFrame:SetScript("OnUpdate", function(f, elapsed)
 	f.t = f.t + elapsed;
 	if f.t >= 0.05 then
 		f.t = 0;
-		if SlotController:Refresh(f.sequence[f.i], f.forceRefresh) then
+		if SlotController:Refresh(f.sequence[f.i], f.forceRefresh, f.disableAnimations) then
 			f.i = f.i + 1;
 		else
 			f:Hide();
@@ -1748,16 +1749,16 @@ for slotID in pairs(ValidForTempEnchant) do
 	table.insert(SlotController.tempEnchantSequence, slotID);
 end
 
-function SlotController:Refresh(slotID, forceRefresh)
+function SlotController:Refresh(slotID, forceRefresh, disableAnimations)
 	if SLOT_TABLE[slotID] then
-		SLOT_TABLE[slotID]:Refresh(forceRefresh);
+		SLOT_TABLE[slotID]:Refresh(forceRefresh, disableAnimations);
 		return true;
 	end
 end
 
-function SlotController:RefreshAll(forceRefresh)
+function SlotController:RefreshAll(forceRefresh, disableAnimations)
 	for slotID, slotButton in pairs(SLOT_TABLE) do
-		slotButton:Refresh(forceRefresh);
+		slotButton:Refresh(forceRefresh, disableAnimations);
 	end
 end
 
@@ -1779,6 +1780,7 @@ function SlotController:LazyRefresh(sequenceName)
 		f.sequence = self.refreshSequence;
 		f.forceRefresh = false;
 	end
+	f.disableAnimations = IsCameraInstantModeActive();
 	f:Show();
 end
 
@@ -2349,8 +2351,9 @@ function Narci_Open()
 				return
 			end
 
+			local instantMode = IsCameraInstantModeActive();
 			RadarChart:SetValue(0,0,0,0,1);
-			if IsCameraInstantModeActive() then
+			if instantMode then
 				SetLetterboxStateInstant(true);
 			else
 				PlayLetteboxAnimation();
@@ -2359,7 +2362,7 @@ function Narci_Open()
 			Vignette.VignetteLeft:SetAlpha(VIGNETTE_ALPHA);
 			Vignette.VignetteRight:SetAlpha(VIGNETTE_ALPHA);
 			Vignette.VignetteRightSmall:SetAlpha(0);
-			if IsCameraInstantModeActive() then
+			if instantMode then
 				Vignette:Show();
 				Vignette:SetAlpha(1);
 			else
@@ -2372,8 +2375,18 @@ function Narci_Open()
 				if not IS_OPENED then
 					return
 				end
-				SlotController:LazyRefresh();
-				StatsUpdator:Gradual();
+				if instantMode then
+					SlotController:StopRefresh();
+					SlotController:RefreshAll(false, true);
+					StatsUpdator:Hide();
+					StatsUpdator:Instant();
+					if ItemLevelFrame and ItemLevelFrame.InstantUpdate then
+						ItemLevelFrame:InstantUpdate();
+					end
+				else
+					SlotController:LazyRefresh();
+					StatsUpdator:Gradual();
+				end
 			end);
 		end);
 

@@ -19,6 +19,17 @@ local MiniButton;
 
 local DURATION_LOCK = 1;
 
+local function IsCameraInstantModeActive()
+	return NarcissusDB and (not NarcissusDB.CameraAutoZoomIn) and NarcissusDB.CameraInstantMode
+end
+
+local function GetClickLockDuration()
+	if IsCameraInstantModeActive() then
+		return 0
+	end
+	return DURATION_LOCK
+end
+
 -- Derivative from [[LibDBIcon-1.0]]
 local MapShapeUtil = {};
 
@@ -531,10 +542,13 @@ function NarciMinimapButtonMixin:OnClick(button, down)
 		else
 			if self.useMouseoverMenu then
 				Narci_OpenGroupPhoto();
-				self:Disable();
-				After(DURATION_LOCK, function()
-					self:Enable()
-				end)
+				local durationLock = GetClickLockDuration();
+				if durationLock > 0 then
+					self:Disable();
+					After(durationLock, function()
+						self:Enable()
+					end)
+				end
 			else
 				self:ShowBlizzardMenu();
 			end
@@ -548,7 +562,10 @@ function NarciMinimapButtonMixin:OnClick(button, down)
 		return;
 	end
 
-	self:Disable();
+	local durationLock = GetClickLockDuration();
+	if durationLock > 0 then
+		self:Disable();
+	end
 
 	if self:ShouldLeftClickOpenPhotoMode() then
 		Narci_OpenGroupPhoto();
@@ -556,9 +573,11 @@ function NarciMinimapButtonMixin:OnClick(button, down)
 		Narci_Open();
 	end
 
-	After(DURATION_LOCK, function()
-		self:Enable();
-	end)
+	if durationLock > 0 then
+		After(durationLock, function()
+			self:Enable();
+		end)
+	end
 end
 
 function NarciMinimapButtonMixin:ShouldLeftClickOpenPhotoMode()
