@@ -92,6 +92,19 @@ git push -u origin HEAD
 
 5. Open PR to `main`.
 
+## Completion Proof (Required)
+At the end of every task, capture and share these exact commands/output summary:
+
+```bash
+git branch --show-current
+git log --oneline -n 3
+git status -sb
+```
+
+And explicitly state one of:
+- `Pushed`: commit is on remote (`origin/<branch>`).
+- `Local only`: commit exists locally but has not been pushed yet.
+
 ## Recovery
 List backup branches:
 
