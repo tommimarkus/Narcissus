@@ -24,6 +24,17 @@ Expected output: `.githooks`
 - If a rebase goes wrong, recover from the backup branch.
 
 ## Task Start Cycle
+0. Branch guard before starting a new task:
+
+```bash
+git branch --show-current
+```
+
+- If current branch is `main`: start normally.
+- If current branch is not `main`:
+  - If current branch work is clearly complete, finish it locally first (merge/cherry-pick as needed), then switch to `main`.
+  - If uncertain whether it is complete, ask the user before starting the new task.
+
 1. Sync main:
 
 ```bash

@@ -59,3 +59,6 @@ When adding a new setting, do all of the following:
 ## Git Task Cycle
 - Use the task-oriented git cycle in `docs/git-workflow.md`.
 - Required safety mechanism: `.githooks/pre-rebase` creates `backup/<branch>/<timestamp>` before each rebase.
+- Before starting a new task, check current branch:
+  - If not on `main` and the current branch looks complete, finish it locally first, then switch to `main`.
+  - If not on `main` and completion is uncertain, ask the user before starting the new task.
